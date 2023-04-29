@@ -1,0 +1,25 @@
+#include "shell.h"
+
+/**
+*_strchr - function that locates a character in a string
+*@s: string to search
+*@c: character to find
+*
+*Return: returns null or zero
+*/
+
+char *_strchr(const char *s, char c)
+{
+	int i;
+
+	if (s == NULL)
+		return (NULL);
+
+	for (i = 0; s[i] != '\0'; i++)
+	{
+		if (s[i] == c)
+			return (&((char *)s)[i]);
+	}
+	return (0);
+
+}
