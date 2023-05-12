@@ -3,10 +3,10 @@
 * execmd - create child process and execute
 * @argv: pointer to pointer of string
 * @command: path to command to be executeds
-* @actual_command: the command argument passed for execution
+* @envp: environment
 * Return: nothing
 */
-void execmd(char *command, char **argv, char *actual_command)
+void execmd(char *command, char **argv, char **envp)
 {
 	pid_t pid;
 	int status;
@@ -19,8 +19,7 @@ void execmd(char *command, char **argv, char *actual_command)
 	}
 	if (pid == 0)
 	{
-		command = location(argv[0]);
-		execve(command, argv, NULL);
+		execve(command, argv, envp);
 		perror("execve failed");
 		return;
 
@@ -38,17 +37,20 @@ void execmd(char *command, char **argv, char *actual_command)
 			return;
 		}
 	}
-	free(actual_command);
 }
 
 /**
 * exec - function that executes a command
+* @envp: environment
+* @d: increament commands
 * @argv: array of string arguments
+* Return: returns void value
 */
 
-void exec(char **argv)
+void exec(char **argv, char **envp, int d)
 {
-	char *command, *actual_command = NULL;
+	char *command;
+	int m = 0;
 
 	if (argv)
 	{
@@ -77,13 +79,12 @@ void exec(char **argv)
 		}
 		else
 		{
-			actual_command = location(command);
-			if (actual_command == NULL)
-			{
-				fprintf(stderr, "%s: 1: command not found\n", argv[0]);
+			command = location(argv[0], &m);
+			if (com(command, argv, d))
 				return;
-			}
-			execmd(command, argv, actual_command);
+			execmd(command, argv, envp);
+			if (m == 0)
+				free(command);
 		}
 	}
 

@@ -81,4 +81,3 @@ int _unsetenv(const char *name)
 	}
 	return (0);
 }
-

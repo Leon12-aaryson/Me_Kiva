@@ -3,120 +3,110 @@
 /**
 * interactive - this is the main function of the interactive
 *	simple shell programe
+*@envp: environment
 *@argc: this is an integer argument
 *@argv: character pointer array
 * Return: The function returns a value of 0 on success
 */
 
-void interactive(int argc, char **argv)
+void interactive(int argc, __attribute__((unused)) char **argv, char **envp)
 {
-	char *lineptr = NULL, *lineptr_cpy = NULL;
-	/*char *prompt = "$ ";*/
+	char *lineptr = NULL, *lineptr_cpy = NULL, **av = NULL;
 	size_t x = 0;
-	/*int y;*/
+	int y = 0, d = 0;
 	ssize_t reach_char;
 	const char *delim = " \n";
 
 	while (1)
-	{	printf("$ ");
+	{
+		_puts("$ ");
+		d++;
 		fflush(stdout);
 		reach_char = getline(&lineptr, &x, stdin);
 		if (reach_char == -1)
 			break;
 		if (reach_char == 1)
 			continue;
-
-		argv = input_parser(lineptr, delim, &argc);
+		av = input_parser(lineptr, delim, &argc);
+		if (av[0] == NULL)
+		{
+			free(av);
+			continue;
+		}
 		argc = no_token(lineptr, delim);
-		is_exit(argv, lineptr, lineptr_cpy, argc);
-		is_env(argv);
-		if (strcmp(argv[0], "env") != 0)
-			exec(argv);
-		/*for (y = 0; y <= argc; y++)
-			free(argv[y]);
-		free(argv);
-		free(lineptr);*/
+		is_exit(av, lineptr, lineptr_cpy, argc);
+		is_env(av);
+		if (strcmp(av[0], "env") != 0)
+			exec(av, envp, d);
+		for (y = 0; y < argc; y++)
+			free(av[y]);
+		free(av);
+
 	}
+	free(lineptr);
 }
 /**
 * non_interactive - this is the main function of the interactive
 *       simple shell programe
+*@envp: environment
 *@argc: this is an integer argument
 *@argv: character pointer array
 * Return: The function returns a value of 0 on success
 */
 
-void non_interactive(int *argc, char **argv)
+void non_interactive(int argc, __attribute__((unused)) char **argv,
+char **envp)
 {
-	char *lineptr = NULL, *lineptr_cpy = NULL;
+	char *lineptr = NULL, *lineptr_cpy = NULL, **av = NULL;
 	size_t x = 0;
-	ssize_t reach_char;
+	ssize_t reach_char = 0;
 	const char *delim = " \n";
-	/*int y;*/
-	/*char **temp;*/
+	int y, d = 0;
 
-	fflush(stdout);
-	reach_char = getline(&lineptr, &x, stdin);
 
-	while (reach_char != -1)
+	while (1)
 	{
-		if (*lineptr != '\n')
-		{
-			lineptr[reach_char - 1] = '\0';
-			lineptr_cpy = _alloc(reach_char);
-			strcpy(lineptr_cpy, lineptr);
-			if (check_space(lineptr) == 1)
-			{
-				free(lineptr_cpy);
-				exit(0);
-			}
-			argv = input_parser(lineptr, delim, argc);
-			*argc = no_token(lineptr, delim);
-			printf("%d\n", *argc);
-			is_exit(argv, lineptr, lineptr_cpy, *argc);
-			is_env(argv);
-			if (strcmp(argv[0], "env") != 0)
-				exec(argv);
-			/*temp = argv;*/
-			/*for (y = 0; y <= *argc; y++)
-				free(argv[y]);
-			free(argv);*/
-			free(lineptr);
-		}
+		d++;
 		reach_char = getline(&lineptr, &x, stdin);
+		if (reach_char == -1)
+			break;
+		if (reach_char == 1)
+			continue;
+		av = input_parser(lineptr, delim, &argc);
+		if (av[0] == NULL)
+		{
+			free(av);
+			continue;
+		}
+		argc = no_token(lineptr, delim);
+		is_exit(av, lineptr, lineptr_cpy, argc);
+		is_env(av);
+		if (strcmp(av[0], "env") != 0)
+			exec(av, envp, d);
+		for (y = 0; y < argc; y++)
+			free(av[y]);
+		free(av);
 	}
+	free(lineptr);
 }
 
 /**
 *main - code for main function
 *@argc: integer argument
+*@envp: environment
 *@argv: pointer array
 *Return: returns 0
 */
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **envp)
 {
-	char **temp;
-
 	if (isatty(STDIN_FILENO))
 	{
-		interactive(argc, argv);
+		interactive(argc, argv, envp);
 	}
 	else
 	{
-		non_interactive(&argc, argv);
-	}
-	temp = argv;
-
-	if (temp != NULL)
-	{
-		for (; *temp != NULL; temp++)
-		{
-			free(*temp);
-			*temp = NULL;
-		}
-		free(argv);
-		argv = NULL;
+		non_interactive(argc, argv, envp);
 	}
 	return (0);
 }

@@ -2,9 +2,10 @@
 /**
 * location - function that return path of a command
 * @command: command whose path is returned
+* @m: argument for clearing mem leaks
 * Return: path of command
 */
-char *location(char *command)
+char *location(char *command, int *m)
 {
 	char *path = NULL, *path_copy = NULL, *path_token = NULL, *file_path = NULL;
 	int command_length, dir_length;
@@ -23,7 +24,7 @@ char *location(char *command)
 			strcpy(file_path, path_token);
 			strcat(file_path, "/");
 			strcat(file_path, command);
-			strcat(file_path, "\0");
+		/*	strcat(file_path, "\0");*/
 			/* let's test if this file path actually exists and return it if it does*/
 			if (stat(file_path, &buffer) == 0)
 			{
@@ -40,6 +41,7 @@ char *location(char *command)
 		free(path_copy);
 		if (stat(command, &buffer) == 0)
 		{
+			*m = 1;
 			return (command);
 		}
 		return (NULL);
